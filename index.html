@@ -18,10 +18,59 @@
       font-family: sans-serif;
       font-size: 2.5rem;
       text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .explode span {
+      position: absolute;
+      animation: explode 800ms cubic-bezier(.36,2,.49,.63) forwards;
+      font-size: 2.5rem;
+      color: #ffe100;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+    @keyframes explode {
+      to {
+        opacity: 0;
+        transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(2.2);
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Hello Chris</h1>
+  <h1 id="explodeText">Hello Chris</h1>
+  <script>
+    const h1 = document.getElementById('explodeText');
+    h1.addEventListener('click', function () {
+      if(h1.classList.contains('explode')) return;
+      h1.classList.add('explode');
+
+      // Remove the text
+      h1.style.visibility = 'hidden';
+      // Explode effect
+      const text = h1.textContent;
+      const rect = h1.getBoundingClientRect();
+      const fragment = document.createDocumentFragment();
+      for(let i=0; i<text.length; i++) {
+        const span = document.createElement('span');
+        span.textContent = text[i] === ' ' ? '\u00A0' : text[i];
+        const angle = 2 * Math.PI * (i / text.length);
+        const dist = 80 + Math.random()*60;
+        span.style.setProperty('--x', `${Math.cos(angle) * dist}px`);
+        span.style.setProperty('--y', `${Math.sin(angle) * dist}px`);
+        span.style.setProperty('--r', `${(Math.random()-0.5)*2}turn`);
+        span.style.left = `${rect.left + window.scrollX + (i * rect.width/text.length) - rect.left}px`;
+        span.style.top = `${rect.top + window.scrollY + rect.height/2 - rect.top}px`;
+        fragment.appendChild(span);
+      }
+      h1.parentElement.appendChild(fragment);
+      // Remove the spans after animation
+      setTimeout(() => {
+        document.querySelectorAll('.explode span').forEach(s=>s.remove());
+        h1.style.visibility = '';
+        h1.classList.remove('explode');
+      }, 900);
+    });
+  </script>
 </body>
 </html>
